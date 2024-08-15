@@ -3,7 +3,10 @@ import { errorHandler } from '../utils/error.js';
 
 export const createListing = async (req, res, next) => {
   try {
-    const listing = await Listing.create(req.body);
+    const listing = await Listing.create({
+      ...req.body,
+      userRef: req.user.id, 
+    });
     return res.status(201).json(listing);
   } catch (error) {
     next(error);
@@ -31,11 +34,13 @@ export const deleteListing = async (req, res, next) => {
 
 export const updateListing = async (req, res, next) => {
   const listing = await Listing.findById(req.params.id);
+
   if (!listing) {
     return next(errorHandler(404, 'Oglas nije pronađen!'));
   }
+
   if (req.user.id !== listing.userRef) {
-    return next(errorHandler(401, 'Možete obrisati samo svoje oglase!'));
+    return next(errorHandler(401, 'Možete ažurirati samo svoje oglase!'));
   }
 
   try {
@@ -60,5 +65,4 @@ export const getListing = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-  
-  }
+};

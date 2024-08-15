@@ -42,13 +42,19 @@ export const deleteUser = async (req, res, next) => {
   if (req.user.id !== req.params.id)
     return next(errorHandler(401, 'Možete izbrisati samo svoj račun!'));
   try {
-    await User.findByIdAndDelete(req.params.id);
+    const user = await User.findByIdAndDelete(req.params.id);
+    
+    if (!user) {
+      return next(errorHandler(404, 'Korisnik nije pronađen!'));
+    }
+
     res.clearCookie('access_token');
-    res.status(200).json('Korisnik je izbrisan!');
+    res.status(200).json({ success: true, message: 'Korisnik je izbrisan!' });
   } catch (error) {
     next(error);
   }
 };
+
 export const getUserListings = async (req, res, next) => {
   if (req.user.id === req.params.id) {
     try {
@@ -58,6 +64,6 @@ export const getUserListings = async (req, res, next) => {
       next(error);
     }
   } else {
-    return next(errorHandler(401, 'You can only view your own listings!'));
+    return next(errorHandler(401, 'Možete videti samo svoje oglase!'));
   }
 };
